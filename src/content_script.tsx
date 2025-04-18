@@ -14,7 +14,7 @@ const init = async () => {
   // Run once on initial load
   await placeholderFunction();
 
-  // Run on DOM updates (e.g. infinite scrolling)
+  // Run on DOM updates
   const observer = new MutationObserver(() => {
     const now = Date.now();
     if (now - lastCalled > throttleDelay) {
