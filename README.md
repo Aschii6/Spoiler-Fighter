@@ -1,6 +1,6 @@
 # Spoiler Fighter
 
-## Maybe even a Tank, Mage or Assassin
+### Maybe even a Tank, Mage or Assassin
 
 Source code for a Chrome Extension to hide spoilers.
 
