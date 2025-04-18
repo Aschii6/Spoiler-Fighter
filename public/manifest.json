@@ -1,0 +1,41 @@
+{
+    "manifest_version": 3,
+  
+    "name": "Spoiler Blocker?",
+    "description": "Bestest spoiler blocker out there.",
+    "version": "1.0.0",
+  
+    "options_ui": {
+      "page": "options.html"
+    },
+  
+    "action": {
+      "default_icon": {
+        "16": "S16.png",
+        "128": "S128.png"
+      },
+      "default_popup": "popup.html"
+    },
+  
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["js/vendor.js", "js/content_script.js"]
+        }
+    ],
+  
+    "background": {
+      "service_worker": "js/background.js"
+    },
+  
+    "permissions": [
+      "storage",
+      "scripting",
+      "activeTab"
+    ],
+  
+    "host_permissions": [
+      "<all_urls>"
+    ]
+  }
+  

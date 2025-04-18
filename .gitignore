@@ -1,0 +1,14 @@
+node_modules/
+
+dist/
+build/
+
+tmp/
+
+.vscode/
+
+coverage/
+
+npm-debug.log
+
+*.env
