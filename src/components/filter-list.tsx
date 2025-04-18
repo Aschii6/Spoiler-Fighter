@@ -1,25 +1,14 @@
 import React from "react";
-
 import { toast } from "react-toastify";
-import { getSavedFilterUrls } from "../utils/storage-utils";
 import { removeFilterUrl } from "../utils/storage-utils";
 
-const FilterList = () => {
-  const [filterUrls, setFilterUrls] = React.useState<string[]>([]);
-
-  React.useEffect(() => {
-    const fetchFilterUrls = async () => {
-      const urls = await getSavedFilterUrls();
-      setFilterUrls(urls);
-    };
-
-    fetchFilterUrls().then(() => {
-      console.log("Filter URLs fetched:", filterUrls);
-    }).catch((error) => {
-      console.error("Error fetching filter URLs:", error);
-    });
-  }, []);
-
+const FilterList = ({
+  filterUrls,
+  setFilterUrls,
+}: {
+  filterUrls: string[];
+  setFilterUrls: React.Dispatch<React.SetStateAction<string[]>>;
+}) => {
   const handleRemoveUrl = async (url: string) => {
     try {
       await removeFilterUrl(url);

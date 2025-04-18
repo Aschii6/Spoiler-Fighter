@@ -12,7 +12,7 @@ export const getStorage = async (key: string): Promise<any> => {
 
 export const setStorage = async (key: string, value: any): Promise<void> => {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.set({[key]: value}, () => {
+    chrome.storage.local.set({ [key]: value }, () => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);
       } else {

@@ -8,7 +8,7 @@ export const getSavedFilterUrls = async (): Promise<string[]> => {
     console.error("Error getting saved filter URLs:", error);
     return [];
   }
-}
+};
 
 export const saveFilterUrl = async (url: string): Promise<void> => {
   try {
@@ -20,7 +20,7 @@ export const saveFilterUrl = async (url: string): Promise<void> => {
   } catch (error) {
     console.error("Error saving filter URL:", error);
   }
-}
+};
 
 export const removeFilterUrl = async (url: string): Promise<void> => {
   try {
@@ -30,4 +30,4 @@ export const removeFilterUrl = async (url: string): Promise<void> => {
   } catch (error) {
     console.error("Error removing filter URL:", error);
   }
-}
+};
