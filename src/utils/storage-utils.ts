@@ -31,3 +31,21 @@ export const removeFilterUrl = async (url: string): Promise<void> => {
     console.error("Error removing filter URL:", error);
   }
 };
+
+export const getFilteringEnabled = async (): Promise<boolean> => {
+  try {
+    const enabled = await getStorage("filteringEnabled");
+    return enabled !== undefined ? enabled : false;
+  } catch (error) {
+    console.error("Error getting filtering enabled status:", error);
+    return false;
+  }
+};
+
+export const setFilteringEnabled = async (enabled: boolean): Promise<void> => {
+  try {
+    await setStorage("filteringEnabled", enabled);
+  } catch (error) {
+    console.error("Error setting filtering enabled status:", error);
+  }
+};
