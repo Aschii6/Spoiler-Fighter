@@ -1,8 +1,8 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
+import {createRoot} from "react-dom/client";
 import SaveToFilterButton from "./components/save-to-filter-button";
 import FilterList from "./components/filter-list";
-import { toast, ToastContainer } from "react-toastify";
+import {toast, ToastContainer} from "react-toastify";
 import {
   getFilteringEnabled,
   getSavedFilterUrls,
@@ -49,6 +49,11 @@ const Popup = () => {
     await saveFilterUrl(filterUrl);
     toast.success(`URL ${filterUrl} saved to filter list!`);
     await refreshFilterUrls();
+
+    if (tab.id !== undefined) {
+      await chrome.tabs.sendMessage(tab.id, {action: "tryFiltering"});
+    }
+
   };
 
   const handleToggleFiltering = async () => {
@@ -58,20 +63,20 @@ const Popup = () => {
     toast.success(`Filtering turned ${newState ? "on" : "off"}`);
 
     if (newState) {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
       if (tab.id !== undefined) {
-        await chrome.tabs.sendMessage(tab.id, { action: "enableFiltering" });
+        await chrome.tabs.sendMessage(tab.id, {action: "tryFiltering"});
       }
     }
   };
 
   return (
-    <div style={{ width: "500px", height: "300", display: "flex" }}>
-      <div style={{ flex: 1, padding: "1rem" }}>
+    <div style={{width: "500px", height: "300", display: "flex"}}>
+      <div style={{flex: 1, padding: "1rem"}}>
         <h1>Spoiler Fighter</h1>
-        <SaveToFilterButton onSave={handleSaveUrl} />
-        <FilterList filterUrls={filterUrls} setFilterUrls={setFilterUrls} />
+        <SaveToFilterButton onSave={handleSaveUrl}/>
+        <FilterList filterUrls={filterUrls} setFilterUrls={setFilterUrls}/>
       </div>
 
       <div
@@ -100,6 +105,6 @@ const root = createRoot(document.getElementById("root")!);
 
 root.render(
   <React.StrictMode>
-    <Popup />
+    <Popup/>
   </React.StrictMode>,
 );
