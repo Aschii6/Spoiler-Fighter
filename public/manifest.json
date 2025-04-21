@@ -14,11 +14,7 @@
 			"128": "S128.png"
 		},
 		"default_popup": "popup.html",
-		"default_title": "Spoiler Fighter",
-		"default_size": {
-			"width": 400,
-			"height": 600
-		}
+		"default_title": "Spoiler Fighter"
 	},
 
 	"content_scripts": [
