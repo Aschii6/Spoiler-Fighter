@@ -1,14 +1,22 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { createRoot } from "react-dom/client";
 import { FormControlLabel, Switch } from "@mui/material";
 
 import "./styles/tailwind.css";
+import {loadIsFiltering, saveIsFiltering} from "./utils/storage_utils";
 
 const Popup = () => {
   const [isFiltering, setIsFiltering] = React.useState(false);
 
+  useEffect(() => {
+    loadIsFiltering().then(value => {
+      setIsFiltering(value);
+    });
+  });
+
   const handleSwitchChange = () => {
     setIsFiltering(!isFiltering);
+    saveIsFiltering(!isFiltering).then();
   };
 
   return (
