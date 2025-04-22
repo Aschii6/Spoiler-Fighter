@@ -32,6 +32,14 @@ const Popup = () => {
     const newValue = !isFiltering;
     setIsFiltering(newValue);
     saveIsFiltering(newValue).then();
+
+    if (newValue) {
+      chrome.runtime.sendMessage({
+        action: "hideSpoilers",
+      }).then(r => {
+        console.log(r);
+      });
+    }
   };
 
   const handleAddUrl = () => {
@@ -42,6 +50,12 @@ const Popup = () => {
           setFilteredUrls(newFilteredUrls);
           saveFilteredUrls(newFilteredUrls).then(() => {
             openSnackbar(`Added ${hostname} to filtered URLs`);
+          });
+
+          chrome.runtime.sendMessage({
+            action: "hideSpoilers",
+          }).then(r => {
+            console.log(r);
           });
         } else {
           openSnackbar(`${hostname} is already in filtered URLs`);

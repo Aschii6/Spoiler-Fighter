@@ -16,7 +16,7 @@ export const FilteredUrlList = ({
       </h1>
       <hr className={"my-1 mx-6"} />
       <List
-        className={"p-2 font-serif"}
+        className={"font-serif"}
         sx={{
           maxHeight: "250px",
           overflowY: "auto",
@@ -35,6 +35,7 @@ export const FilteredUrlList = ({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                padding: "4px 12px",
               }}
             >
               {url}

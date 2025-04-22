@@ -4,7 +4,7 @@ export const getCurrentHostname = (): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     const [tab] = await chrome.tabs.query({
       active: true,
-      currentWindow: true,
+      lastFocusedWindow: true,
     });
     if (!tab || !tab.url) {
       reject(new Error("No active tab found or no URL available"));
@@ -16,3 +16,16 @@ export const getCurrentHostname = (): Promise<string> => {
     resolve(hostname);
   });
 };
+
+export const isCurrentHostnameInFilteredUrls = (): Promise<boolean> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const filteredUrls = await loadFilteredUrls();
+      const currentHostname = await getCurrentHostname();
+      resolve(filteredUrls.includes(currentHostname));
+    } catch (error) {
+      console.error("Error checking if current hostname is in filtered URLs:", error);
+      reject(error);
+    }
+  });
+}
