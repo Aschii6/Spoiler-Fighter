@@ -12,11 +12,12 @@ const Popup = () => {
     loadIsFiltering().then(value => {
       setIsFiltering(value);
     });
-  });
+  }, []);
 
   const handleSwitchChange = () => {
-    setIsFiltering(!isFiltering);
-    saveIsFiltering(!isFiltering).then();
+    const newValue = !isFiltering;
+    setIsFiltering(newValue);
+    saveIsFiltering(newValue).then();
   };
 
   return (
