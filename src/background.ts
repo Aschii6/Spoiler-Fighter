@@ -1,5 +1,5 @@
-import {loadIsFiltering} from "./utils/storage_utils";
-import {isCurrentHostnameInFilteredUrls} from "./utils/utils";
+import { loadIsFiltering } from "./utils/storage_utils";
+import { isCurrentHostnameInFilteredUrls } from "./utils/utils";
 
 function polling() {
   setTimeout(polling, 1000 * 30);

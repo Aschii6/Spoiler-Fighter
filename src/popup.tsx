@@ -34,11 +34,13 @@ const Popup = () => {
     saveIsFiltering(newValue).then();
 
     if (newValue) {
-      chrome.runtime.sendMessage({
-        action: "hideSpoilers",
-      }).then(r => {
-        console.log(r);
-      });
+      chrome.runtime
+        .sendMessage({
+          action: "hideSpoilers",
+        })
+        .then((r) => {
+          console.log(r);
+        });
     }
   };
 
@@ -52,11 +54,13 @@ const Popup = () => {
             openSnackbar(`Added ${hostname} to filtered URLs`);
           });
 
-          chrome.runtime.sendMessage({
-            action: "hideSpoilers",
-          }).then(r => {
-            console.log(r);
-          });
+          chrome.runtime
+            .sendMessage({
+              action: "hideSpoilers",
+            })
+            .then((r) => {
+              console.log(r);
+            });
         } else {
           openSnackbar(`${hostname} is already in filtered URLs`);
         }

@@ -1,8 +1,10 @@
 async function hideSpoilers() {
-  chrome.runtime.sendMessage({ action: "shouldIHideSpoilers" }).then((response) => {
-    if (response.shouldHide) {
-      console.log("Hiding spoilers");
-      /*const textNodes = document.evaluate(
+  chrome.runtime
+    .sendMessage({action: "shouldIHideSpoilers"})
+    .then(async (response) => {
+      if (response.shouldHide) {
+        console.log("Hiding spoilers");
+        /*const textNodes = document.evaluate(
         "//text()[normalize-space()]",
         document,
         null,
@@ -21,51 +23,108 @@ async function hideSpoilers() {
         }
       }*/
 
-      const textNodes = getVisibleTextNodes();
-      // const asciiRegexRule = /[ -~]/; // /^[\x00-\x7F]*$/
-      const nonAsciiRegexRule = /[^\x00-\x7F]/;
-      const nonAsciiRegex = new RegExp(nonAsciiRegexRule);
+        const textNodes = getVisibleTextNodes();
+        // const asciiRegexRule = /[ -~]/; // /^[\x00-\x7F]*$/
+        const nonAsciiRegexRule = /[^\x00-\x7F]/;
+        const nonAsciiRegex = new RegExp(nonAsciiRegexRule);
 
-      const filteredTextNodes = textNodes.filter(({ text }) => {
-        return !nonAsciiRegex.test(text); // Return false if text contain ANY non-ASCII character
-      });
+        const filteredTextNodes = textNodes.filter(({text}) => {
+          return !nonAsciiRegex.test(text); // Return false if text contain ANY non-ASCII character
+        });
 
-      let processedTextNodesCount = 0;
+        let processedTextNodesCount = 0;
 
-      for (const { text, node, parent } of filteredTextNodes) {
-        if (parent.dataset.processed) {
-          continue;
-        }
-        processedTextNodesCount++;
+        for (const {text, node, parent} of filteredTextNodes) {
+          if (parent.dataset.processed) {
+            continue;
+          }
+          processedTextNodesCount++;
 
-        const splitRegexRule = /\b[a-zA-Z]+\b|\d+|[^\s\w]/g;
-        const splitRegex = new RegExp(splitRegexRule);
+          /*try {
+            const response = await fetch(
+              "http://127.0.0.1:8000/spoilers/predict",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ [0]: text }),
+              },
+            );
 
-        const splitText = text.match(splitRegex);
+            if (!response.ok) throw new Error("Network response was not ok");
 
-        parent.dataset.processed = "true";
+            const data = await response.json();
 
-        /*if (splitText) {
-          const newContent = splitText
-            .map((word) => {
-              if (nonAsciiRegex.test(word)) {
-                return `<span class="spoiler">${word}</span>`;
+            if (data[0] == true) {
+              // node.textContent = "SPOILER HIDDEN";
+              const span = document.createElement("span");
+              span.className = "spoiler";
+              span.textContent = text;
+              node.replaceWith(span);
+            }
+
+            parent.dataset.processed = "true";
+          } catch (error) {
+            console.error("Error sending request:", error);
+            continue;
+          }*/
+
+          // const splitRegexRule = /\b[a-zA-Z]+\b|\d+|[^\s\w]/g; // Words and numbers and punctuation
+          const splitRegexRule = /[^.!?]+[.!?]?/g; // Matches sentences, including those without punctuation
+          const splitRegex = new RegExp(splitRegexRule);
+
+          const splitText = text.match(splitRegex);
+
+          if (splitText) {
+            for (let i = 0; i < splitText.length; i++) {
+              /*try {
+                const response = await fetch(
+                  "http://127.0.0.1:8000/spoilers/predict",
+                  {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({[i]: splitText[i]}),
+                  },
+                );
+
+                if (!response.ok) throw new Error("Network response was not ok");
+
+                const data = await response.json();
+
+                if (data[i] == true) {
+                  const span = document.createElement("span");
+                  span.className = "spoiler";
+                  span.textContent = text;
+                  node.replaceWith(span);
+                }
+              } catch (error) {
+                console.error("Error sending request:", error);
+                continue;
               }
-              return word;
-            })
-            .join(" ");
-          parent.innerHTML = parent.innerHTML.replace(text, newContent);
-        }*/
-      }
 
-      console.log("Processed text nodes: ", processedTextNodesCount);
-    } else {
-      console.log("Not hiding spoilers");
-      return;
-    }
-  }).catch((error) => {
-    console.error("Error sending message:", error);
-  });
+              parent.dataset.processed = "true";*/
+            }
+
+            /*const newContent = splitText
+              .map((word) => {
+                if (nonAsciiRegex.test(word)) {
+                  return `<span class="spoiler">${word}</span>`;
+                }
+                return word;
+              })
+              .join(" ");
+            parent.innerHTML = parent.innerHTML.replace(text, newContent);*/
+          }
+        }
+
+        console.log("Processed text nodes: ", processedTextNodesCount);
+      } else {
+        console.log("Not hiding spoilers");
+        return;
+      }
+    })
+    .catch((error) => {
+      console.error("Error sending message:", error);
+    });
 }
 
 async function main() {
@@ -83,7 +142,6 @@ async function main() {
       childList: true,
       subtree: true,
     });
-
   } catch (error) {
     console.error("Error in content script:", error);
   }
@@ -93,12 +151,14 @@ main().then();
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "hideSpoilers") {
-    hideSpoilers().then(() => {
-      sendResponse({success: true});
-    }).catch((error) => {
-      console.error("Error hiding spoilers:", error);
-      sendResponse({success: false});
-    });
+    hideSpoilers()
+      .then(() => {
+        sendResponse({success: true});
+      })
+      .catch((error) => {
+        console.error("Error hiding spoilers:", error);
+        sendResponse({success: false});
+      });
     return true;
   }
 });
@@ -113,10 +173,13 @@ function throttle(func: Function, delay: number) {
       if (timeout) {
         clearTimeout(timeout);
       }
-      timeout = setTimeout(() => {
-        lastCall = now;
-        func(...args);
-      }, delay - (now - lastCall));
+      timeout = setTimeout(
+        () => {
+          lastCall = now;
+          func(...args);
+        },
+        delay - (now - lastCall),
+      );
     } else {
       lastCall = now;
       func(...args);
@@ -178,9 +241,11 @@ function getVisibleTextNodes(): TextNodeInfo[] {
 
         const hasMeaningfulText = node.textContent?.trim().length;
 
-        return isVisible && hasMeaningfulText ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        return isVisible && hasMeaningfulText
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
       },
-    }
+    },
   );
 
   const results: TextNodeInfo[] = [];
@@ -197,4 +262,3 @@ function getVisibleTextNodes(): TextNodeInfo[] {
 
   return results;
 }
-

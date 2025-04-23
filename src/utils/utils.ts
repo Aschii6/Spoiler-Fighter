@@ -24,8 +24,11 @@ export const isCurrentHostnameInFilteredUrls = (): Promise<boolean> => {
       const currentHostname = await getCurrentHostname();
       resolve(filteredUrls.includes(currentHostname));
     } catch (error) {
-      console.error("Error checking if current hostname is in filtered URLs:", error);
+      console.error(
+        "Error checking if current hostname is in filtered URLs:",
+        error,
+      );
       reject(error);
     }
   });
-}
+};

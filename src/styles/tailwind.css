@@ -3,3 +3,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles */
+@layer components {
+  .spoiler {
+    @apply bg-black text-black cursor-pointer no-underline;
+  }
+
+  .spoiler:hover {
+    @apply bg-transparent text-inherit;
+  }
+}
+
