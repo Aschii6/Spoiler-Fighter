@@ -120,19 +120,21 @@ const Popup = () => {
               "&:hover": {
                 backgroundColor: "#d5a500",
               },
+              borderWidth: "2px",
+              borderColor: "#444",
               borderRadius: "8px",
             }}
             onClick={handleAddUrl}
           >
             Add URL
           </Button>
-          <Box sx={{ height: "10px" }} />
+          <Box sx={{ height: "16px" }} />
           <FilteredUrlList
             filteredUrls={filteredUrls}
             removeUrl={handleRemoveUrl}
           />
         </div>
-        <div className={""}>
+        <div className={"text-center"}>
           <FormControlLabel
             label={
               <p className={"text-md text-zinc-800 font-serif"}>

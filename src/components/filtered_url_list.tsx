@@ -14,9 +14,9 @@ export const FilteredUrlList = ({
       <h1 className={"text-center text-lg text-zinc-800 font-semibold"}>
         Filtered URLs
       </h1>
-      <hr className={"my-1 mx-6"} />
+      {/*<hr className={"my-1 mx-6"} />*/}
       <List
-        className={"font-serif"}
+        className={"font-serif border-2 rounded-lg border-gray-500 bg-amber-200"}
         sx={{
           maxHeight: "250px",
           overflowY: "auto",
@@ -42,7 +42,7 @@ export const FilteredUrlList = ({
               <Button
                 variant="text"
                 onClick={() => removeUrl(url)}
-                sx={{ minWidth: 0, padding: 0 }}
+                sx={{ minWidth: 0, padding: 0}}
               >
                 <RemoveIcon color="error" />
               </Button>
