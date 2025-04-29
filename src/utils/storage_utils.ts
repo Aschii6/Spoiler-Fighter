@@ -37,3 +37,23 @@ export const saveFilteredUrls = async (
     console.error("Error setting filteredUrls in storage:", error);
   }
 };
+
+export const saveFilteredTitles = async (
+  filteredTitles: string[],
+): Promise<void> => {
+  try {
+    await setStorage("filteredTitles", filteredTitles);
+  } catch (error) {
+    console.error("Error setting filteredTitles in storage:", error);
+  }
+}
+
+export const loadFilteredTitles = async (): Promise<string[]> => {
+  try {
+    const filteredTitles = await getStorage("filteredTitles");
+    return filteredTitles !== undefined ? filteredTitles : [];
+  } catch (error) {
+    console.error("Error getting filteredTitles from storage:", error);
+    return [];
+  }
+};
