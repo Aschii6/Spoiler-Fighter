@@ -1,93 +1,157 @@
 import {loadFilteredTitles} from "./utils/storage_utils";
 
+let isHidingSpoilers = false;
+
 async function hideSpoilers() {
-  chrome.runtime
-    .sendMessage({action: "shouldIHideSpoilers"})
-    .then(async (response) => {
-      if (response.shouldHide) {
-        console.log("Hiding spoilers");
+  if (isHidingSpoilers) {
+    console.log("hideSpoilers is already running, skipping this call.");
+    return;
+  }
 
-        const filteredTitles = await loadFilteredTitles();
+  isHidingSpoilers = true;
 
-        const textNodes = getVisibleTextNodes();
-        // const asciiRegexRule = /[ -~]/; // /^[\x00-\x7F]*$/
-        const nonAsciiRegexRule = /[^\x00-\x7F]/;
-        const nonAsciiRegex = new RegExp(nonAsciiRegexRule);
+  try {
+    const response = await chrome.runtime.sendMessage({action: "shouldIHideSpoilers"});
 
-        const filteredTextNodes = textNodes.filter(({text}) => {
-          return !nonAsciiRegex.test(text); // Return false if text contain ANY non-ASCII character
-        });
+    if (response.shouldHide) {
+      console.log("Hiding spoilers");
 
-        let processedTextNodesCount = 0;
+      const filteredTitles = await loadFilteredTitles();
+      const textNodes = getVisibleTextNodes();
+      const nonAsciiRegex = /[^\x00-\x7F]/;
 
-        for (const {text, node} of filteredTextNodes) {
-          const parent = node.parentElement;
-          if (parent?.dataset.processed) continue;
+      const filteredTextNodes = textNodes.filter(({text, node}) => {
+        const parent = node.parentElement;
+        return !nonAsciiRegex.test(text) || !(parent?.dataset.processed)
+      });
 
-          processedTextNodesCount++;
+      let processedTextNodesCount = 0;
 
-          console.log(text)
+      const GROUP_LENGTH = 150;
 
-          /*try {
-            const response = await fetch(
-              "http://127.0.0.1:8000/spoilers/predict",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ "sentences": [text], "titles": filteredTitles }),
-              },
-            );
+      type TextNodeGroup = {
+        text: string;
+        nodes: TextNodeInfo[];
+      };
+      const textNodeGroups: TextNodeGroup[] = [];
+      let currentGroup: TextNodeGroup = {text: "", nodes: []};
 
-            if (!response.ok) throw new Error("Network response was not ok");
-
-            const data = await response.json();
-
-            if ((data["predictions"])[0] == true) {
-              // node.textContent = "SPOILER HIDDEN";
-              const span = document.createElement("span");
-              span.className = "spoiler-fighter-hidden";
-              span.textContent = text;
-              span.onclick = () => {
-                if (span.classList.contains("spoiler-fighter-hidden")) {
-                  span.classList.remove("spoiler-fighter-hidden");
-                  span.classList.add("spoiler-fighter-revealed");
-                } else {
-                  span.classList.remove("spoiler-fighter-revealed");
-                  span.classList.add("spoiler-fighter-hidden");
-                }
-              }
-              node.replaceWith(span);
-            }
-
-            if (parent === null) {
-              console.warn("Parent element is null for node:", node);
-              continue;
-            }
-            parent.dataset.processed = "true";
-          } catch (error) {
-            console.error("Error sending request:", error);
-          }*/
-
-          if (parent !== null)
-            parent.dataset.processed = "true";
+      for (const {text, node} of filteredTextNodes) {
+        if (currentGroup.text.length + text.length > GROUP_LENGTH) {
+          textNodeGroups.push(currentGroup);
+          console.log("New group created");
+          currentGroup = {text: "", nodes: []};
         }
-
-        console.log("Processed text nodes: ", processedTextNodesCount);
-      } else {
-        console.log("Not hiding spoilers");
-        return;
+        currentGroup.text += text + " ";
+        currentGroup.nodes.push({text, node});
       }
-    })
-    .catch((error) => {
-      console.error("Error sending message:", error);
-    });
+
+      if (currentGroup.text.length > 0) {
+        textNodeGroups.push(currentGroup);
+      }
+
+      for (const group of textNodeGroups) {
+        try {
+          const response = await fetch("http://127.0.0.1:8000/spoilers/predict", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({sentences: [group.text], titles: filteredTitles}),
+          });
+
+          if (!response.ok) {
+            console.log("Network response was not ok");
+            continue;
+          }
+
+          const data = await response.json();
+
+          if (data["predictions"][0] == true) {
+            for (const {text, node} of group.nodes) {
+              replaceTextNodeWithSpan(node, text);
+              processedTextNodesCount++;
+            }
+          }
+
+          const parents = new Set(group.nodes.map(({node}) => node.parentElement));
+          for (const parent of parents) {
+            if (parent) {
+              parent.dataset.processed = "true";
+            }
+          }
+        } catch (error) {
+          console.error("Error sending request:", error);
+        }
+      }
+
+      /*for (const { text, node } of filteredTextNodes) {
+        console.log(text);
+
+        const parent = node.parentElement;
+        if (parent?.dataset.processed) continue;
+
+        processedTextNodesCount++;
+
+        try {
+          const response = await fetch("http://127.0.0.1:8000/spoilers/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sentences: [text], titles: filteredTitles }),
+          });
+
+          if (!response.ok) {
+            console.log("Network response was not ok");
+            continue;
+          }
+
+          const data = await response.json();
+
+          if (data["predictions"][0] === true) {
+            replaceTextNodeWithSpan(node, text);
+          }
+
+          if (parent === null) {
+            console.warn("Parent element is null for node:", node);
+            continue;
+          }
+          parent.dataset.processed = "true";
+        } catch (error) {
+          console.error("Error sending request:", error);
+        }
+      }*/
+
+      console.log("Processed text nodes: ", processedTextNodesCount);
+    } else {
+      console.log("Not hiding spoilers");
+    }
+  } catch (error) {
+    console.error("Error in hideSpoilers:", error);
+  } finally {
+    isHidingSpoilers = false;
+  }
+}
+
+function replaceTextNodeWithSpan(node: Text, text: string) {
+  const span = document.createElement("span");
+  span.className = "spoiler-fighter-hidden";
+  span.textContent = text;
+  span.onclick = () => {
+    if (span.classList.contains("spoiler-fighter-hidden")) {
+      span.classList.remove("spoiler-fighter-hidden");
+      span.classList.add("spoiler-fighter-revealed");
+    } else {
+      span.classList.remove("spoiler-fighter-revealed");
+      span.classList.add("spoiler-fighter-hidden");
+    }
+  };
+  node.replaceWith(span);
+  span.dataset.processed = "true";
 }
 
 async function main() {
   try {
     await hideSpoilers();
 
-    const throttleDelay = 1000;
+    const throttleDelay = 3000;
     const throttledHideSpoilers = throttle(hideSpoilers, throttleDelay);
 
     const observer = new MutationObserver(() => {
@@ -163,7 +227,9 @@ function getVisibleTextNodes(): TextNodeInfo[] {
           style.visibility !== "hidden" &&
           parseFloat(style.opacity) > 0;
 
-        const hasMeaningfulText = node.textContent?.trim().length;
+        if (node.textContent === null) return NodeFilter.FILTER_REJECT;
+
+        const hasMeaningfulText = node.textContent.trim().length > 10;
 
         return isVisible && hasMeaningfulText
           ? NodeFilter.FILTER_ACCEPT
@@ -181,10 +247,32 @@ function getVisibleTextNodes(): TextNodeInfo[] {
     if (textNode.textContent.trim().length === 0) continue;
 
     results.push({
-      text: textNode.textContent!.trim(),
+      text: textNode.textContent!,
       node: textNode
     });
   }
 
   return results;
 }
+
+function injectStyles() {
+  const style = document.createElement("style");
+  style.textContent = `
+    .spoiler-fighter-hidden {
+      background-color: #333 !important;
+      color: transparent !important;
+      cursor: pointer !important;
+      text-decoration: none !important;
+      border-radius: 4px !important;
+      filter: blur(2px) !important;
+    }
+
+    .spoiler-fighter-revealed {
+      cursor: pointer !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Call the function to inject styles
+injectStyles();

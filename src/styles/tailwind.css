@@ -7,11 +7,11 @@
 /* Custom styles */
 @layer components {
   .spoiler-fighter-hidden {
-    @apply bg-black text-black cursor-pointer no-underline;
+    @apply bg-black text-black cursor-pointer no-underline
   }
 
   .spoiler-fighter-hidden:hover {
-    @apply bg-transparent text-inherit;
+    @apply bg-transparent text-inherit cursor-pointer
   }
 }
 
