@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { createRoot } from "react-dom/client";
+import React, {useEffect} from "react";
+import {createRoot} from "react-dom/client";
 import {Button, FormControlLabel, Switch, Snackbar, Box, Select, SelectChangeEvent, MenuItem} from "@mui/material";
 
 import "./styles/tailwind.css";
@@ -10,8 +10,8 @@ import {
   saveFilteredUrls,
   saveIsFiltering,
 } from "./utils/storage_utils";
-import { FilteredUrlList } from "./components/filtered_url_list";
-import { getCurrentHostname } from "./utils/utils";
+import {FilteredUrlList} from "./components/filtered_url_list";
+import {getCurrentHostname} from "./utils/utils";
 import {TitleList} from "./components/title_list";
 
 const Popup = () => {
@@ -36,13 +36,11 @@ const Popup = () => {
     });
 
     filteredTitlesOptions.push(
-      "The Hunger Games",
-      "Divergent",
-      "The Godfather",
-      "Attack on Titan",
-      "A Song of Ice and Fire",
-      "The Great Gatsby",
-      "Harry Potter"
+      "The Dark Knight",
+      "The Lord of the Rings",
+      "The Shawshank Redemption",
+      "Fight Club",
+      "The Godfather"
     );
 
     loadFilteredTitles().then((titles) => {
@@ -156,8 +154,8 @@ const Popup = () => {
             Close
           </Button>
         }
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        sx = {{
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
+        sx={{
           minWidth: "300px",
         }}
       />
@@ -169,7 +167,7 @@ const Popup = () => {
       <h1 className={"text-center text-xl text-zinc-800 font-bold"}>
         Spoiler Fighter
       </h1>
-      <hr className={"my-2 mx-10"} />
+      <hr className={"my-2 mx-10"}/>
       <div className={"grid grid-cols-2"}>
         <div className={"text-center"}>
           <Button
@@ -188,7 +186,7 @@ const Popup = () => {
           >
             Add URL
           </Button>
-          <Box sx={{ height: "16px" }} />
+          <Box sx={{height: "16px"}}/>
           <FilteredUrlList
             filteredUrls={filteredUrls}
             removeUrl={handleRemoveUrl}
@@ -251,6 +249,6 @@ const root = createRoot(document.getElementById("root")!);
 
 root.render(
   <React.StrictMode>
-    <Popup />
+    <Popup/>
   </React.StrictMode>,
 );
