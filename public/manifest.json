@@ -10,8 +10,10 @@
 
 	"action": {
 		"default_icon": {
-			"16": "S16.png",
-			"128": "S128.png"
+			"16": "SPx16.png",
+			"32": "SPx32.png",
+			"48": "SPx48.png",
+			"128": "SPx128.png"
 		},
 		"default_popup": "popup.html",
 		"default_title": "Spoiler Fighter"
