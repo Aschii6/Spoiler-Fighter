@@ -1,27 +1,13 @@
+import {loadFilteredTitles} from "./utils/storage_utils";
+
 async function hideSpoilers() {
   chrome.runtime
     .sendMessage({action: "shouldIHideSpoilers"})
     .then(async (response) => {
       if (response.shouldHide) {
         console.log("Hiding spoilers");
-        /*const textNodes = document.evaluate(
-        "//text()[normalize-space()]",
-        document,
-        null,
-        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-        null
-      );
 
-      for (let i = 0; i < textNodes.snapshotLength; i++) {
-        const node = textNodes.snapshotItem(i);
-        if (node) {
-          const parentElement = node.parentElement;
-          if (parentElement && parentElement.tagName !== "SCRIPT" && parentElement.tagName !== "STYLE") {
-            const textContent = node.textContent;
-            console.log("Text content:", textContent);
-          }
-        }
-      }*/
+        const filteredTitles = await loadFilteredTitles();
 
         const textNodes = getVisibleTextNodes();
         // const asciiRegexRule = /[ -~]/; // /^[\x00-\x7F]*$/
@@ -34,11 +20,13 @@ async function hideSpoilers() {
 
         let processedTextNodesCount = 0;
 
-        for (const {text, node, parent} of filteredTextNodes) {
-          if (parent.dataset.processed) {
-            continue;
-          }
+        for (const {text, node} of filteredTextNodes) {
+          const parent = node.parentElement;
+          if (parent?.dataset.processed) continue;
+
           processedTextNodesCount++;
+
+          console.log(text)
 
           /*try {
             const response = await fetch(
@@ -46,7 +34,7 @@ async function hideSpoilers() {
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ [0]: text }),
+                body: JSON.stringify({ "sentences": [text], "titles": filteredTitles }),
               },
             );
 
@@ -54,66 +42,34 @@ async function hideSpoilers() {
 
             const data = await response.json();
 
-            if (data[0] == true) {
+            if ((data["predictions"])[0] == true) {
               // node.textContent = "SPOILER HIDDEN";
               const span = document.createElement("span");
-              span.className = "spoiler";
+              span.className = "spoiler-fighter-hidden";
               span.textContent = text;
+              span.onclick = () => {
+                if (span.classList.contains("spoiler-fighter-hidden")) {
+                  span.classList.remove("spoiler-fighter-hidden");
+                  span.classList.add("spoiler-fighter-revealed");
+                } else {
+                  span.classList.remove("spoiler-fighter-revealed");
+                  span.classList.add("spoiler-fighter-hidden");
+                }
+              }
               node.replaceWith(span);
             }
 
+            if (parent === null) {
+              console.warn("Parent element is null for node:", node);
+              continue;
+            }
             parent.dataset.processed = "true";
           } catch (error) {
             console.error("Error sending request:", error);
-            continue;
           }*/
 
-          // const splitRegexRule = /\b[a-zA-Z]+\b|\d+|[^\s\w]/g; // Words and numbers and punctuation
-          const splitRegexRule = /[^.!?]+[.!?]?/g; // Matches sentences, including those without punctuation
-          const splitRegex = new RegExp(splitRegexRule);
-
-          const splitText = text.match(splitRegex);
-
-          if (splitText) {
-            for (let i = 0; i < splitText.length; i++) {
-              /*try {
-                const response = await fetch(
-                  "http://127.0.0.1:8000/spoilers/predict",
-                  {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({[i]: splitText[i]}),
-                  },
-                );
-
-                if (!response.ok) throw new Error("Network response was not ok");
-
-                const data = await response.json();
-
-                if (data[i] == true) {
-                  const span = document.createElement("span");
-                  span.className = "spoiler";
-                  span.textContent = text;
-                  node.replaceWith(span);
-                }
-              } catch (error) {
-                console.error("Error sending request:", error);
-                continue;
-              }
-
-              parent.dataset.processed = "true";*/
-            }
-
-            /*const newContent = splitText
-              .map((word) => {
-                if (nonAsciiRegex.test(word)) {
-                  return `<span class="spoiler">${word}</span>`;
-                }
-                return word;
-              })
-              .join(" ");
-            parent.innerHTML = parent.innerHTML.replace(text, newContent);*/
-          }
+          if (parent !== null)
+            parent.dataset.processed = "true";
         }
 
         console.log("Processed text nodes: ", processedTextNodesCount);
@@ -187,41 +143,9 @@ function throttle(func: Function, delay: number) {
   };
 }
 
-/*
-function throttleTrailing(func: Function, limit: number) {
-  let lastRun = 0;
-  let timeout: NodeJS.Timeout | null = null;
-  let pending = false;
-
-  return function () {
-    const now = Date.now();
-    const elapsed = now - lastRun;
-
-    if (elapsed >= limit) {
-      lastRun = now;
-      func();
-    } else {
-      pending = true;
-
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-
-      timeout = setTimeout(() => {
-        if (pending) {
-          lastRun = now;
-          func();
-          pending = false;
-        }
-      }, limit - elapsed);
-    }
-  }
-}*/
-
 type TextNodeInfo = {
   text: string;
   node: Text;
-  parent: HTMLElement;
 };
 
 function getVisibleTextNodes(): TextNodeInfo[] {
@@ -252,11 +176,13 @@ function getVisibleTextNodes(): TextNodeInfo[] {
   let current: Node | null;
   while ((current = walker.nextNode())) {
     const textNode = current as Text;
-    const parent = textNode.parentElement!;
+
+    if (!textNode.textContent) continue;
+    if (textNode.textContent.trim().length === 0) continue;
+
     results.push({
       text: textNode.textContent!.trim(),
-      node: textNode,
-      parent,
+      node: textNode
     });
   }
 

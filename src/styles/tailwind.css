@@ -6,11 +6,11 @@
 
 /* Custom styles */
 @layer components {
-  .spoiler {
+  .spoiler-fighter-hidden {
     @apply bg-black text-black cursor-pointer no-underline;
   }
 
-  .spoiler:hover {
+  .spoiler-fighter-hidden:hover {
     @apply bg-transparent text-inherit;
   }
 }
