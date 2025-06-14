@@ -210,7 +210,7 @@ const Popup = () => {
             Add Title
           </Button>
           <Box sx={{height: "8px"}}/>
-          <Select variant={"outlined"} value={selectedTitle} onChange={handleSelect} displayEmpty={true} sx={{
+          <Select id={"title-select"} variant={"outlined"} value={selectedTitle} onChange={handleSelect} displayEmpty={true} sx={{
             height: "40px", minWidth: "100px"
           }}>
             <MenuItem value="">
