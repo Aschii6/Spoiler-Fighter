@@ -16,6 +16,7 @@ export const TitleList = ({
           Specific Titles to be Filtered
         </h1>
         <List
+          id = {"title-list"}
           className={"font-serif border-2 rounded-lg border-gray-500 bg-amber-200"}
           sx={{
             maxHeight: "150px",
@@ -30,6 +31,7 @@ export const TitleList = ({
             titles.map((title, index) => (
               <ListItem
                 key={index}
+                id = {`title-${index}`}
                 className={"text-sm font-serif text-zinc-800"}
                 sx={{
                   display: "flex",

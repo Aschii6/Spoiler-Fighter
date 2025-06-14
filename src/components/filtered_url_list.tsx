@@ -17,6 +17,7 @@ export const FilteredUrlList = ({
         </h1>
         {/*<hr className={"my-1 mx-6"} />*/}
         <List
+          id={"filtered-url-list"}
           className={"font-serif border-2 rounded-lg border-gray-500 bg-amber-200"}
           sx={{
             maxHeight: "250px",
